@@ -2,6 +2,7 @@
 #include "gles_bridge.h"
 #include "audio_bridge.h"
 #include "input_bridge.h"
+#include "fs_bridge.h"
 #include <unordered_map>
 #include <string>
 #include <cstring>
@@ -33,6 +34,9 @@ static const std::unordered_map<std::string, void*> g_symbol_table = {
     {"_strlen", (void*)&strlen},
     {"_strcmp", (void*)&strcmp},
     
+    {"_fopen", (void*)&fake_fopen},
+    {"_open", (void*)&fake_open},
+
     {"_mach_absolute_time", (void*)&fake_mach_absolute_time},
     {"_NSLog", (void*)&fake_NSLog},
 
