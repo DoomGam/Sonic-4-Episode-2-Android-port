@@ -3,6 +3,7 @@
 #include "loader/mach_o_loader.h"
 #include "bridge/gles_bridge.h"
 #include "bridge/input_bridge.h"
+#include "bridge/fs_bridge.h"
 
 #define LOG_TAG "Sonic4Ep2_Loader"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -16,6 +17,12 @@ Java_com_doomgam_sonic4ep2_MainActivity_initNativeEngine(
         jobject instance,
         jstring dataDirPath,
         jstring binaryPath) {
+
+    const char* nativeDataPath = env->GetStringUTFChars(dataDirPath, nullptr);
+    if (nativeDataPath != nullptr) {
+        FSBridge::getInstance().setBaseDataPath(nativeDataPath);
+        env->ReleaseStringUTFChars(dataDirPath, nativeDataPath);
+    }
 
     const char* nativeBinaryPath = env->GetStringUTFChars(binaryPath, nullptr);
     LOGI("Iniciando o carregador do Sonic 4 Ep 2 com o binário: %s", nativeBinaryPath);
