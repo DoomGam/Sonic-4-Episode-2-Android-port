@@ -1,5 +1,6 @@
 #include "symbol_bridge.h"
 #include "gles_bridge.h"
+#include "audio_bridge.h"
 #include <unordered_map>
 #include <string>
 #include <cstring>
@@ -37,7 +38,10 @@ static const std::unordered_map<std::string, void*> g_symbol_table = {
     {"_EAGLContext_setCurrentContext", (void*)&fake_EAGLContext_setCurrentContext},
     {"_glBindRenderbufferOES", (void*)&glBindRenderbuffer},
     {"_glRenderbufferStorageOES", (void*)&glRenderbufferStorage},
-    {"_glFramebufferRenderbufferOES", (void*)&glFramebufferRenderbuffer}
+    {"_glFramebufferRenderbufferOES", (void*)&glFramebufferRenderbuffer},
+
+    {"_AudioServicesPlaySystemSound", (void*)&fake_AudioServicesPlaySystemSound},
+    {"_alSourcePlay", (void*)&fake_alSourcePlay}
 };
 
 extern "C" void* resolve_ios_symbol(const char* name) {
