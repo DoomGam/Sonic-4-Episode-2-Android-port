@@ -8,9 +8,11 @@ add_library(
     SHARED
     main.cpp
     loader/mach_o_loader.cpp
+    bridge/symbol_bridge.cpp
     bridge/gles_bridge.cpp
     bridge/audio_bridge.cpp
     bridge/input_bridge.cpp
+    bridge/fs_bridge.cpp
 )
 
 find_library(log-lib log)
