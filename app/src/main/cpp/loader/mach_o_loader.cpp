@@ -1,4 +1,5 @@
 #include "mach_o_loader.h"
+#include "../bridge/symbol_bridge.h"
 #include <android/log.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -7,6 +8,7 @@
 #include <cstring>
 #include <mach-o/loader.h>
 #include <mach-o/fat.h>
+#include <mach-o/nlist.h>
 
 #define LOG_TAG "MachOLoader"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -76,10 +78,28 @@ bool MachOLoader::loadBinary(const std::string& binaryPath) {
                 struct segment_command* seg = reinterpret_cast<struct segment_command*>(lc);
                 LOGI("Segmento 32-bit encontrado: %s | VAddr: 0x%08x | VSize: 0x%08x",
                      seg->segname, seg->vmaddr, seg->vmsize);
+            } else if (lc->cmd == LC_SYMTAB) {
+                struct symtab_command* symcmd = reinterpret_cast<struct symtab_command*>(lc);
+                LOGI("Tabela de Símbolos 32-bit encontrada: %d símbolos no offset 0x%x",
+                     symcmd->nsyms, symcmd->symoff);
+                
+                const char* strTable = reinterpret_cast<const char*>(targetBinary + symcmd->stroff);
+                struct nlist* symTable = reinterpret_cast<struct nlist*>(targetBinary + symcmd->symoff);
+
+                for (uint32_t j = 0; j < symcmd->nsyms; j++) {
+                    if (symTable[j].n_un.n_strx > 0) {
+                        const char* symbolName = strTable + symTable[j].n_un.n_strx;
+                        void* resolvedAddr = resolve_ios_symbol(symbolName);
+                        if (resolvedAddr) {
+                            LOGI("Símbolo vinculado: %s -> %p", symbolName, resolvedAddr);
+                        }
+                    }
+                }
             }
             cmdPtr += lc->cmdsize;
         }
-    } else if (magic == MH_MAGIC_64 || magic == MH_CIGAM_64) {
+    } 
+    else if (magic == MH_MAGIC_64 || magic == MH_CIGAM_64) {
         LOGI("Processando cabeçalho Mach-O 64-bit...");
         struct mach_header_64* header = reinterpret_cast<struct mach_header_64*>(targetBinary);
         uint8_t* cmdPtr = targetBinary + sizeof(struct mach_header_64);
@@ -90,6 +110,23 @@ bool MachOLoader::loadBinary(const std::string& binaryPath) {
                 struct segment_command_64* seg = reinterpret_cast<struct segment_command_64*>(lc);
                 LOGI("Segmento 64-bit encontrado: %s | VAddr: 0x%016llx | VSize: 0x%016llx",
                      seg->segname, seg->vmaddr, seg->vmsize);
+            } else if (lc->cmd == LC_SYMTAB) {
+                struct symtab_command* symcmd = reinterpret_cast<struct symtab_command*>(lc);
+                LOGI("Tabela de Símbolos 64-bit encontrada: %d símbolos no offset 0x%x",
+                     symcmd->nsyms, symcmd->symoff);
+
+                const char* strTable = reinterpret_cast<const char*>(targetBinary + symcmd->stroff);
+                struct nlist_64* symTable = reinterpret_cast<struct nlist_64*>(targetBinary + symcmd->symoff);
+
+                for (uint32_t j = 0; j < symcmd->nsyms; j++) {
+                    if (symTable[j].n_un.n_strx > 0) {
+                        const char* symbolName = strTable + symTable[j].n_un.n_strx;
+                        void* resolvedAddr = resolve_ios_symbol(symbolName);
+                        if (resolvedAddr) {
+                            LOGI("Símbolo vinculado: %s -> %p", symbolName, resolvedAddr);
+                        }
+                    }
+                }
             }
             cmdPtr += lc->cmdsize;
         }
@@ -105,7 +142,7 @@ bool MachOLoader::loadBinary(const std::string& binaryPath) {
 }
 
 void* MachOLoader::getSymbolAddress(const std::string& symbolName) {
-    return nullptr;
+    return resolve_ios_symbol(symbolName.c_str());
 }
 
 bool MachOLoader::executeEntryPoint() {
