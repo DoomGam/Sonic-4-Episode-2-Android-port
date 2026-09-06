@@ -16,11 +16,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configurar Java (JDK 17)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
 
       - name: Configurar Android SDK e NDK
         uses: android-actions/setup-android@v3
@@ -32,11 +31,8 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;25.2.9519653" "cmake;3.22.1"
 
-      - name: Dar permissão de execução ao Gradle
-        run: chmod +x ./gradlew
-
-      - name: Compilar APK (Debug)
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Compilar APK via Gradle do Sistema
+        run: gradle assembleDebug --stacktrace
 
       - name: Salvar APK como Artefato de Build
         uses: actions/upload-artifact@v4
