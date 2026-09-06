@@ -1,9 +1,12 @@
+#include "symbol_bridge.h"
+#include "gles_bridge.h"
 #include <unordered_map>
 #include <string>
 #include <cstring>
 #include <cstdlib>
 #include <android/log.h>
 #include <time.h>
+#include <GLES2/gl2.h>
 
 #define LOG_TAG "Sonic4_SymbolBridge"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -29,7 +32,12 @@ static const std::unordered_map<std::string, void*> g_symbol_table = {
     {"_strcmp", (void*)&strcmp},
     
     {"_mach_absolute_time", (void*)&fake_mach_absolute_time},
-    {"_NSLog", (void*)&fake_NSLog}
+    {"_NSLog", (void*)&fake_NSLog},
+
+    {"_EAGLContext_setCurrentContext", (void*)&fake_EAGLContext_setCurrentContext},
+    {"_glBindRenderbufferOES", (void*)&glBindRenderbuffer},
+    {"_glRenderbufferStorageOES", (void*)&glRenderbufferStorage},
+    {"_glFramebufferRenderbufferOES", (void*)&glFramebufferRenderbuffer}
 };
 
 extern "C" void* resolve_ios_symbol(const char* name) {
