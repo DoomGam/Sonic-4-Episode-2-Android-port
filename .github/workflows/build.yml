@@ -40,7 +40,7 @@ jobs:
           gradle-version: '8.2'
 
       - name: Compilar APK (Debug)
-        run: gradle assembleDebug --stacktrace
+        run: gradle assembleDebug --info --stacktrace
 
       - name: Salvar APK como Artefato de Build
         uses: actions/upload-artifact@v4
