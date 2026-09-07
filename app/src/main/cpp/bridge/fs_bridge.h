@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <string>
+#include <sys/stat.h> // Necessario para mode_t no Android NDK
 
 class FSBridge {
 public:
