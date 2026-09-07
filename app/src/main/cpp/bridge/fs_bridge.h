@@ -3,12 +3,11 @@
 
 #include <cstdio>
 #include <string>
-#include <sys/stat.h> // Necessario para mode_t no Android NDK
+#include <sys/stat.h>
 
 class FSBridge {
 public:
     static FSBridge& getInstance();
-
     void setBaseDataPath(const std::string& path);
     std::string resolvePath(const char* originalPath);
 
