@@ -1,7 +1,12 @@
-cmake_minimum_required(VERSION 3.18.1)
+cmake_minimum_required(VERSION 3.22.1)
+
 project("sonic4ep2_loader")
 
-set(CMAKE_CXX_STANDARD 17)
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/loader
+    ${CMAKE_CURRENT_SOURCE_DIR}/bridge
+)
 
 add_library(
     sonic4ep2_loader
@@ -16,14 +21,14 @@ add_library(
 )
 
 find_library(log-lib log)
-find_library(android-lib android)
+find_library(gles-lib GLESv2)
+find_library(egl-lib EGL)
+find_library(opensles-lib OpenSLES)
 
 target_link_libraries(
     sonic4ep2_loader
     ${log-lib}
-    ${android-lib}
-    EGL
-    GLESv2
-    OpenSLES
-    dl
+    ${gles-lib}
+    ${egl-lib}
+    ${opensles-lib}
 )
